@@ -1,9 +1,11 @@
 package com.jiwon.datagg.riot;
 
+import com.jiwon.datagg.match.MatchService;
 import com.jiwon.datagg.riot.dto.RiotAccountResponse;
 import com.jiwon.datagg.riot.dto.RiotLeagueEntryResponse;
 import com.jiwon.datagg.riot.dto.RiotMatchDetailResponse;
 import com.jiwon.datagg.riot.dto.RiotSummonerResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,9 +16,11 @@ import java.util.List;
 public class RiotTestController {
 
     private final RiotApiClient riotApiClient;
+    private final MatchService matchService;
 
-    public RiotTestController(RiotApiClient riotApiClient) {
+    public RiotTestController(RiotApiClient riotApiClient, MatchService matchService) {
         this.riotApiClient = riotApiClient;
+        this.matchService = matchService;
     }
 
     @GetMapping("/api/test/riot/account")
@@ -53,5 +57,15 @@ public class RiotTestController {
             @RequestParam String matchId
     ) {
         return riotApiClient.getMatchDetail(matchId);
+    }
+
+    @GetMapping("/api/test/riot/match/participant")
+    public ResponseEntity<RiotMatchDetailResponse.Participant> getMatchParticipant(
+            @RequestParam String matchId,
+            @RequestParam String puuid
+    ) {
+        return matchService.findParticipant(matchId, puuid)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
